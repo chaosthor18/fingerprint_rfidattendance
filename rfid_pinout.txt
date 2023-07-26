@@ -1,0 +1,5 @@
+sda-d4
+sck-d5
+mosi-d7
+miso-d6
+rst-d3
