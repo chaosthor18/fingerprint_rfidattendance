@@ -488,7 +488,6 @@ void fingerprint_timein(int id){
     int httpCode = http.POST(postData);
     String payload = http.getString();
     if(httpCode > 0){
-      Serial.println("Success Time in");
       Serial.println(payload);
     }
     http.end();
