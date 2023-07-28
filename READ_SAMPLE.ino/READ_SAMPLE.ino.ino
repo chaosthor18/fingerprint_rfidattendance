@@ -2,8 +2,8 @@
  *  Created by TheCircuit
 */
 
-#define SS_PIN 4  //D2
-#define RST_PIN 5 //D1
+#define SS_PIN D8  
+#define RST_PIN D0 
 
 #include <SPI.h>
 #include <MFRC522.h>

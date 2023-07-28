@@ -1,2 +1,2 @@
-d1 black
-d2 yellow
+d4 black wire
+d3 yellow wire

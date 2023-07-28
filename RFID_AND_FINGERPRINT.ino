@@ -3,17 +3,20 @@
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
-#define SS_PIN D4
-#define RST_PIN D3
+#define SS_PIN D8  
+#define RST_PIN D0 
 WiFiClient wificlient;
 #include <Adafruit_Fingerprint.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 
+const String ip="http://192.168.1.8";
 const char *ssid = "MITSI-Admin"; //WIFI NAME OR HOTSPOT
 const char *password = "M@ssiv3its_2017"; //WIFI PASSWORD POR MOBILE HOTSPOT PASSWORD
-#define Finger_Rx 5 //D1 black wire
-#define Finger_Tx 4 //D2 yellow wire
-
+#define Finger_Rx 2 //D4 black wire 2
+#define Finger_Tx 0 //D3 yellow wire 0
 SoftwareSerial mySerial(Finger_Rx, Finger_Tx);
 
 /////////////////RFID AND FINGERPRINT////////////////////////
@@ -39,12 +42,15 @@ void setup() {
    WiFi.mode(WIFI_STA);
    WiFi.begin(ssid, password);
    Serial.println("");
-
    Serial.print("Connecting");
    while (WiFi.status() != WL_CONNECTED) {
      delay(500);
      Serial.print(".");
    }
+//   lcd.setCursor(0, 0);
+//   lcd.print("WIFI CONNECTED");
+//   delay(500);
+//   lcd.clear();
    Serial.println("");
    Serial.print("Connected to ");
    Serial.println(ssid);
@@ -56,6 +62,9 @@ void setup() {
     Serial.println("Did not find fingerprint sensor :(");
     while (1) { delay(1); }
     }
+   lcd.begin(16, 2);
+   lcd.init();
+   lcd.backlight();
    SPI.begin();
    mfrc522.PCD_Init();
 }
@@ -65,7 +74,7 @@ void getfingerId(String cardid) {
     Serial.println("Wifi Connected");
     HTTPClient http;
     String postData = "uid=" + String(cardid) + "&action=getfingerId";
-    http.begin(wificlient,"http://192.168.1.8/BIOMETRICS/rfid-actions/process.php");              
+    http.begin(wificlient,ip+"/BIOMETRICS/rfid-actions/process.php");              
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");  
     int httpCode = http.POST(postData);
     String payload = http.getString();
@@ -81,7 +90,7 @@ void sendRFID(String cardid) {
     Serial.println("Wifi Connected");
     HTTPClient http;
     String postData = "uid=" + String(cardid) + "&action=getmitsi_Id";
-    http.begin(wificlient,"http://192.168.1.8/BIOMETRICS/rfid-actions/process.php");              
+    http.begin(wificlient,ip+"/BIOMETRICS/rfid-actions/process.php");              
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");  
     int httpCode = http.POST(postData);
     String payload = http.getString();
@@ -99,7 +108,7 @@ int register_fingerprint() {//ready=1 standby=0
     Serial.println("Wifi Connected");
     HTTPClient http;
     String postData = "action=register_fingerprint";
-    http.begin(wificlient,"http://192.168.1.8/BIOMETRICS/fingerprint-actions/read.php");              
+    http.begin(wificlient,ip+"/BIOMETRICS/fingerprint-actions/read.php");              
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");  
     int httpCode = http.POST(postData);
     String payload = http.getString();
@@ -140,7 +149,7 @@ void verify_fingerid(){
     Serial.println("Wifi Connected");
     HTTPClient http;
     String postData = "action=get_fingerprintid";
-    http.begin(wificlient,"http://192.168.1.8/BIOMETRICS/fingerprint-actions/read.php");              
+    http.begin(wificlient,ip+"/BIOMETRICS/fingerprint-actions/read.php");              
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");  
     int httpCode = http.POST(postData);
     String payload = http.getString();
@@ -180,7 +189,7 @@ void finger_registeroff(){
     Serial.println("Wifi Connected");
     HTTPClient http;
     String postData = "action=register_off";
-    http.begin(wificlient,"http://192.168.1.8/BIOMETRICS/fingerprint-actions/read.php");              
+    http.begin(wificlient,ip+"/BIOMETRICS/fingerprint-actions/read.php");              
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");  
     int httpCode = http.POST(postData);
     String payload = http.getString();
@@ -341,7 +350,7 @@ int delete_fingerprint(){
     Serial.println("Wifi Connected");
     HTTPClient http;
     String postData = "action=delete_fingerprint";
-    http.begin(wificlient,"http://192.168.1.8/BIOMETRICS/fingerprint-actions/reset.php");              
+    http.begin(wificlient,ip+"/BIOMETRICS/fingerprint-actions/reset.php");              
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");  
     int httpCode = http.POST(postData);
     String payload = http.getString();
@@ -363,7 +372,7 @@ int delete_fingerid(){
     Serial.println("Wifi Connected");
     HTTPClient http;
     String postData = "action=get_fingerprintid";
-    http.begin(wificlient,"http://192.168.1.8/BIOMETRICS/fingerprint-actions/reset.php");              
+    http.begin(wificlient,ip+"/BIOMETRICS/fingerprint-actions/reset.php");              
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");  
     int httpCode = http.POST(postData);
     String payload = http.getString();
@@ -483,7 +492,7 @@ void fingerprint_timein(int id){
     Serial.println(id);
     HTTPClient http;
     String postData = "fingerid="+String(id)+"&action=timeintimeout_insert";
-    http.begin(wificlient,"http://192.168.1.8/BIOMETRICS/fingerprint-actions/process.php");              
+    http.begin(wificlient,ip+"/BIOMETRICS/fingerprint-actions/process.php");              
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");  
     int httpCode = http.POST(postData);
     String payload = http.getString();
@@ -499,6 +508,8 @@ void fingerprint_timein(int id){
 /////////////////////MAIN LOOP PROGRAM///////////////////////////////
 void loop() {
   //ATTENDANCE(RFID AND FINGERPRINT) FINGERPRINT
+  lcd.setCursor(0, 0);
+  lcd.print("Place your RFID:");
   if ( mfrc522.PICC_IsNewCardPresent()){
     if ( mfrc522.PICC_ReadCardSerial()){
       String uid = "";
@@ -525,4 +536,5 @@ void loop() {
   insert_fingerprint();
  }
   delay (2000);
+ lcd.clear();
 }
