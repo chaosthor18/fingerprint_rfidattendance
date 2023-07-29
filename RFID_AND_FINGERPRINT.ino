@@ -7,9 +7,6 @@
 #define RST_PIN D0 
 WiFiClient wificlient;
 #include <Adafruit_Fingerprint.h>
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
-LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 
 const String ip="http://192.168.1.8";
@@ -47,10 +44,6 @@ void setup() {
      delay(500);
      Serial.print(".");
    }
-//   lcd.setCursor(0, 0);
-//   lcd.print("WIFI CONNECTED");
-//   delay(500);
-//   lcd.clear();
    Serial.println("");
    Serial.print("Connected to ");
    Serial.println(ssid);
@@ -62,9 +55,7 @@ void setup() {
     Serial.println("Did not find fingerprint sensor :(");
     while (1) { delay(1); }
     }
-   lcd.begin(16, 2);
-   lcd.init();
-   lcd.backlight();
+   delay(2000);
    SPI.begin();
    mfrc522.PCD_Init();
 }
@@ -97,7 +88,7 @@ void sendRFID(String cardid) {
     Serial.println(httpCode);
     Serial.println(payload);
     if(payload=="Please contact the administrator to register RFID"){return;}
-    getfingerId(payload);
+    else{getfingerId(payload);}
     http.end();
   }
 }
@@ -504,12 +495,9 @@ void fingerprint_timein(int id){
 }
 ////////////////////////////////////////////////////////////////////
 
-
 /////////////////////MAIN LOOP PROGRAM///////////////////////////////
 void loop() {
   //ATTENDANCE(RFID AND FINGERPRINT) FINGERPRINT
-  lcd.setCursor(0, 0);
-  lcd.print("Place your RFID:");
   if ( mfrc522.PICC_IsNewCardPresent()){
     if ( mfrc522.PICC_ReadCardSerial()){
       String uid = "";
@@ -520,7 +508,7 @@ void loop() {
       Serial.println("UID:"+uid);
         sendRFID(uid);
       }                        
-     }
+  }
   //DELETE FINGERPRINT
   if(delete_fingerprint()==1){
   int delete_id = delete_fingerid();
@@ -536,5 +524,4 @@ void loop() {
   insert_fingerprint();
  }
   delay (2000);
- lcd.clear();
 }
