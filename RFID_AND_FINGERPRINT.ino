@@ -9,7 +9,7 @@ WiFiClient wificlient;
 #include <Adafruit_Fingerprint.h>
 
 
-const String ip="http://192.168.1.8";
+const String ip="http://192.168.1.224";//192.168.1.8-local ip xampp
 const char *ssid = "MITSI-Admin"; //WIFI NAME OR HOTSPOT
 const char *password = "M@ssiv3its_2017"; //WIFI PASSWORD POR MOBILE HOTSPOT PASSWORD
 #define Finger_Rx 2 //D4 black wire 2
